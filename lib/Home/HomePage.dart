@@ -21,11 +21,14 @@ class _HomePageState extends State<HomePage> {
   List<Series> series = [];
   final ScrollController _scrollController = ScrollController();
   var TabBarIndex = [
-    '球杆',
-    '配件'
+    '系列',
+    '全部'
   ];
   void initState(){
-    series = [Series('1', 'MAJESTY \n\nCONQUEST', 'assets/One.png'),Series('2', 'MAJESTY \n\nPRESTIGIO XII', 'assets/Test.png')];
+    series = [
+      Series('1', 'MAJESTY \n\nCONQUEST 2022', 'assets/One.png'),
+      Series('2', 'MAJESTY \n\nPRESTIGIO XII', 'assets/Test.png')
+    ];
   }
   @override
   void dispose() {
@@ -135,17 +138,20 @@ class _HomePageState extends State<HomePage> {
                                 child: Row(
                                   children: [
                                     Expanded(
-                                      flex: 1,
+                                      flex: 3,
                                       child: Container()
                                     ),
                                     Expanded(
-                                      flex: 2,
-                                      child: Center(
-                                        child: Text(series[index].Name,
-                                          style: GoogleFonts.lato(
-                                            fontSize: 25,
+                                      flex: 4,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Center(
+                                          child: Text(series[index].Name,
+                                            style: GoogleFonts.lato(
+                                              fontSize: 25,
+                                            )
                                           )
-                                        )
+                                        ),
                                       )
                                     ),
                                   ],

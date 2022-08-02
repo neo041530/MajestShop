@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:majestyshop/ProductPage.dart';
 import 'package:video_player/video_player.dart';
 
 
@@ -78,45 +79,180 @@ class _SeriesPageState extends State<SeriesPage> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('   開球杆',style:GoogleFonts.lato(fontSize: 30)),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text('開球杆',style:GoogleFonts.lato(fontSize: 30)),
+                  ),
+                  SizedBox(
+                    width: size.width*0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)
+                        ),
+                        child: InkWell(
+                         onTap: (){
+                           Navigator.push(context, MaterialPageRoute(
+                               builder: (context) =>const ProductPage())
+                           );
+                         } ,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                alignment: Alignment.topRight,
+                                children: [
+                                  Ink.image(
+                                    image: const AssetImage('assets/drive.png'),
+                                    height: 150,
+                                    width: size.width*0.5,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: GestureDetector(
+                                      onTap: (){
+
+                                      },
+                                      child: const Icon(Icons.favorite_border)
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text('CONQUEST Driver',style: TextStyle(fontSize: 20),),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text('售價 : 10000',style: TextStyle(fontSize: 20)),
+                              )
+                            ],
+                          ),
+                        )
                       ),
-                      child: InkWell(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
-                              alignment: Alignment.topRight,
+                    ),
+                  ),
+                  Divider(
+                    thickness: 2,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text('木杆',style:GoogleFonts.lato(fontSize: 30)),
+                  ),
+                  SizedBox(
+                    width: size.width*0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)
+                          ),
+                          child: InkWell(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) =>const ProductPage())
+                              );
+                            } ,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Ink.image(
-                                  image: const AssetImage('assets/drive.png'),
-                                  height: 150,
-                                  width: size.width*0.5,
-                                  fit: BoxFit.cover,
+                                Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    Ink.image(
+                                      image: const AssetImage('assets/wood.png'),
+                                      height: 150,
+                                      width: size.width*0.5,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: GestureDetector(
+                                          onTap: (){
+
+                                          },
+                                          child: const Icon(Icons.favorite_border)
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: GestureDetector(
-                                    onTap: (){
-
-                                    },
-                                    child: const Icon(Icons.favorite_border)
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text('CONQUEST 3wood',style: TextStyle(fontSize: 20),),
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text('售價 : 6000',style: TextStyle(fontSize: 20)),
+                                )
                               ],
                             ),
-                            Text('  Driver',style: TextStyle(fontSize: 20),),
-                            Text('  售價 : 10000',style: TextStyle(fontSize: 20))
-                          ],
-                        ),
-                      )
+                          )
+                      ),
                     ),
-                  )
+                  ),
+                  Divider(
+                    thickness: 2,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text('鐵杆',style:GoogleFonts.lato(fontSize: 30)),
+                  ),
+                  SizedBox(
+                    width: size.width*0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)
+                          ),
+                          child: InkWell(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) =>const ProductPage())
+                              );
+                            } ,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    Ink.image(
+                                      image: const AssetImage('assets/ironback.png'),
+                                      height: 150,
+                                      width: size.width*0.5,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: GestureDetector(
+                                          onTap: (){
+
+                                          },
+                                          child: const Icon(Icons.favorite_border)
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text('CONQUEST 7iron',style: TextStyle(fontSize: 20),),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Text('售價 : 4000',style: TextStyle(fontSize: 20)),
+                                )
+                              ],
+                            ),
+                          )
+                      ),
+                    ),
+                  ),
                 ],
               );
             },childCount: 1)
