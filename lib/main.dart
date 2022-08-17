@@ -6,8 +6,14 @@ import 'package:majestyshop/Home/FavoritePage.dart';
 import 'package:majestyshop/Home/HomePage.dart';
 import 'package:majestyshop/Home/MessagePage.dart';
 import 'package:majestyshop/Home/PersonPage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     const MaterialApp(debugShowCheckedModeBanner: false,
       home: MyHomePage())
@@ -32,14 +38,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BottomBarIndex == 0 ? null :AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: BottomBarIndex == 1 ? Text('Favorite',):
-        BottomBarIndex == 2 ? Text('Message',):
-        BottomBarIndex == 3 ? Text('Person',): null,
-      ),
+      // appBar: BottomBarIndex == 0 ? null :AppBar(
+      //   centerTitle: true,
+      //   backgroundColor: Colors.black,
+      //   elevation: 0,
+      //   title: BottomBarIndex == 1 ? Text('Favorite',):
+      //   BottomBarIndex == 2 ? Text('Message',):
+      //   BottomBarIndex == 3 ? Text('Person',): null,
+      // ),
       body:BottomBarPage[BottomBarIndex],
       bottomNavigationBar: ConvexAppBar(
         backgroundColor: Colors.black,

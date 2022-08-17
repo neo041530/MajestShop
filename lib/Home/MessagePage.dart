@@ -10,6 +10,23 @@ class MessagePage extends StatefulWidget {
 class _MessagePageState extends State<MessagePage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      backgroundColor: Colors.grey,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: const Text('通知'),
+        actions: [
+          IconButton(
+            onPressed: (){},
+            icon: const Icon(Icons.shopping_cart)
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+
+        ],
+      ),
+    );
   }
 }
