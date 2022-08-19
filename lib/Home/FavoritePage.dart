@@ -1,15 +1,38 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:majestyshop/Home/HomePage.dart';
+import 'package:majestyshop/LoginPage.dart';
 import 'package:majestyshop/ProductPage.dart';
-class FavoriteList{
-  final String id;
-  final String Type;
+
+class FavoriteProduct{
+  final int id;
   final String Name;
-  final String Pay;
   final String Photo;
+  final String Price;
+  final String Type;
+  final String Gender;
 
-  FavoriteList(this.id,this.Type, this.Name, this.Pay, this.Photo);
+  FavoriteProduct({required this.id,required this.Name,required this.Photo,required this.Price,required this.Type,required this.Gender});
 
+  Map<String, dynamic> toJson() => {
+    'id' : id,
+    'Name' : Name,
+    'Photo' : Photo,
+    'Video' : Price,
+    'Type' : Type,
+    'Gender' : Gender
+  };
+
+  static FavoriteProduct fromJson(Map<String,dynamic> json) => FavoriteProduct(
+      id : json['id'],
+      Name : json['Name'],
+      Photo : json['Photo'],
+      Price : json['Price'],
+      Type : json['Type'],
+      Gender : json['Gender']
+  );
 }
 
 class FavoritePage extends StatefulWidget {
@@ -20,125 +43,197 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  List<String> Title =['最愛商品','瀏覽紀錄','為你推薦'];
-  List<FavoriteList> Favorite =[];
-  void initState(){
-    Favorite = [
-      FavoriteList('1','最愛商品','CONQUEST Driver','10000','assets/drive.png'),
-      FavoriteList('2','最愛商品','CONQUEST 7Iron','4000','assets/ironback.png'),
-      FavoriteList('3','最愛商品','CONQUEST 3Wood','8000','assets/wood.png'),
-      FavoriteList('1','瀏覽紀錄','CONQUEST Driver','10000','assets/drive.png'),
-      FavoriteList('3','瀏覽紀錄','CONQUEST 3Wood','8000','assets/wood.png'),
-      FavoriteList('2','瀏覽紀錄','CONQUEST 7Iron','4000','assets/ironback.png'),
-      FavoriteList('1','為你推薦','CONQUEST Driver','10000','assets/drive.png'),
-      FavoriteList('2','為你推薦','CONQUEST 7Iron','4000','assets/ironback.png'),
-      FavoriteList('3','為你推薦','CONQUEST 3Wood','8000','assets/wood.png'),
-    ];
-  }
+
+  Stream<List<TypeTitle>> ReadFavoriteTitle() =>
+      FirebaseFirestore.instance
+          .collection('TypeTitle').where('TypeTitleText',isEqualTo:'FavoriteTitle')
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              TypeTitle.fromJson(e.data())
+          ).toList()
+      );
+
+  Stream<List<FavoriteProduct>> ReadFavoriteProduct(email) =>
+      FirebaseFirestore.instance
+          .collection('FavoritePage').orderBy('Date',descending: true).where('Email',isEqualTo:email)
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              FavoriteProduct.fromJson(e.data())
+          ).toList()
+      );
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.grey,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.black,
-            pinned: true,
-            title: const Text('我的最愛'),
-            actions: [
-              IconButton(
-                  onPressed:(){},
-                  icon: const Icon(Icons.shopping_cart)
-              )
-            ],
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-              List<FavoriteList> favorite = Favorite.where((element) => element.Type == Title[index]).toList();
-            return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(Title[index],style:GoogleFonts.lato(fontSize: 30)),
-                  ),
-                  SizedBox(
-                    height: 300,
-                    child: ListView.builder(
-                      itemCount: favorite.length,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (BuildContext context, int i) {
-                        return SizedBox(
-                          width: size.width*0.6,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Card(
-                              clipBehavior: Clip.antiAlias,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15)
-                              ),
-                              child: InkWell(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (context) => ProductPage(id: 1,))
+      body: StreamBuilder<User?>(//抓使用者登入
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if(snapshot.hasError){
+            final error = snapshot.error;
+            print(error.toString());
+            return Text(error.toString());
+          }else if(snapshot.hasData){
+            final user = snapshot.data;
+            print(user!.email);
+            return StreamBuilder<List<TypeTitle>>(
+              stream: ReadFavoriteTitle(),
+              builder: (context, snapshot) {
+                if(snapshot.hasError){
+                  final error = snapshot.error;
+                  print(error.toString());
+                  return Text(error.toString());
+                }else if(snapshot.hasData){
+                  List<TypeTitle> title= snapshot.data!;
+                  return CustomScrollView(
+                    slivers: [
+                      SliverAppBar(
+                        backgroundColor: Colors.black,
+                        pinned: true,
+                        title: const Text('我的最愛'),
+                        actions: [
+                          IconButton(
+                              onPressed:(){},
+                              icon: const Icon(Icons.shopping_cart)
+                          )
+                        ],
+                      ),
+                      SliverList(
+                          delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                            return StreamBuilder<List<FavoriteProduct>>(
+                              stream: ReadFavoriteProduct(user.email!),
+                              builder: (context, snapshot) {
+                                if(snapshot.hasError){
+                                  final error = snapshot.error;
+                                  print(error.toString());
+                                  return Text(error.toString());
+                                }else if(snapshot.hasData){
+                                  List<FavoriteProduct> favoriteproduct= snapshot.data!.where((element) => element.Type == title[0].typeTitle[index]).toList();
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
+                                      ),
+                                      SizedBox(
+                                        height: 300,
+                                        child: ListView.builder(
+                                          itemCount: favoriteproduct.length,
+                                          scrollDirection: Axis.horizontal,
+                                          itemBuilder: (BuildContext context, int i) {
+                                            return SizedBox(
+                                              width: size.width*0.55,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Card(
+                                                    clipBehavior: Clip.antiAlias,
+                                                    shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(15)
+                                                    ),
+                                                    child: InkWell(
+                                                      onTap: (){
+                                                        Navigator.push(context, MaterialPageRoute(
+                                                            builder: (context) => ProductPage(id: favoriteproduct[i].id,))
+                                                        );
+                                                      },
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 5,
+                                                            child: Stack(
+                                                              alignment: Alignment.topRight,
+                                                              children: [
+                                                                Ink.image(
+                                                                  image: NetworkImage(favoriteproduct[i].Photo),
+                                                                  height: 150,
+                                                                  width: size.width*0.5,
+                                                                  fit: BoxFit.fitHeight,
+                                                                ),
+                                                                Padding(
+                                                                  padding: const EdgeInsets.all(5.0),
+                                                                  child: GestureDetector(
+                                                                      onTap: (){},
+                                                                      child: const Icon(Icons.favorite_border,color: Colors.red,)
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 4,
+                                                            child: Column(
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                Padding(
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                                  child: Text(favoriteproduct[i].Name.replaceAll('\\n', '\n'),
+                                                                    textAlign: TextAlign.start,
+                                                                    style: const TextStyle(fontSize: 20),
+                                                                  ),
+                                                                ),
+                                                                Padding(
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                                  child: FittedBox(
+                                                                      child: Text('售價 : ${favoriteproduct[i].Price}',style:const TextStyle(fontSize: 20)
+                                                                      )
+                                                                  ),
+                                                                ),
+                                                                Padding(
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                                  child: Container(
+                                                                      padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+                                                                      decoration: BoxDecoration(
+                                                                          color: favoriteproduct[i].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
+                                                                          //border: Border.all(),
+                                                                          borderRadius: BorderRadius.circular(10)
+                                                                      ),
+                                                                      child: Text(
+                                                                          favoriteproduct[i].Gender,
+                                                                          style: TextStyle(fontSize: 18,color: Colors.white)
+                                                                      )
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    )
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const Divider(
+                                        thickness: 2,
+                                      ),
+                                    ],
                                   );
-                                },
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 5,
-                                      child: Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Ink.image(
-                                            image: AssetImage(favorite[i].Photo),
-                                            height: 150,
-                                            width: size.width*0.5,
-                                            fit: BoxFit.cover,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: GestureDetector(
-                                              onTap: (){},
-                                                child: const Icon(Icons.favorite,color: Colors.red,)
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text(favorite[i].Name,style: TextStyle(fontSize: 20),),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('售價 : '+favorite[i].Pay,style: TextStyle(fontSize: 20)),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              )
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const Divider(
-                      thickness: 2,
-                    ),
-                ],
-              );
-            },childCount: Title.length)
-          )
-        ],
+                                }else{
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                              }
+                            );
+                          },childCount: title[0].typeTitle.length)
+                      )
+                    ],
+                  );
+                }else{
+                  return const Center(child: CircularProgressIndicator());
+                }
+              }
+            );
+          }else{
+            return LoginPage();
+          }
+        }
       ),
     );
   }

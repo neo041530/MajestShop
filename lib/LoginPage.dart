@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -9,6 +11,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  var EmailController = TextEditingController();
+  var PasswordController = TextEditingController();
+
+  Future signin () async =>
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: EmailController.text.trim(), password: PasswordController.text.trim()
+    );
+
+  @override
+  void dispose(){
+    EmailController.dispose();
+    PasswordController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -22,16 +38,16 @@ class _LoginPageState extends State<LoginPage> {
           //     width: size.width,height: size.height,fit: BoxFit.fill,
           //   ),
           // ),
-          Positioned(
-            left: 10,
-            top: 50,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios),
-              onPressed: (){
-                Navigator.pop(context);
-              },
-            )
-          ),
+          // Positioned(
+          //   left: 10,
+          //   top: 50,
+          //   child: IconButton(
+          //     icon: Icon(Icons.arrow_back_ios),
+          //     onPressed: (){
+          //       Navigator.pop(context);
+          //     },
+          //   )
+          // ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -50,6 +66,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
                 child: TextFormField(
+                  controller: EmailController,
                   decoration: const InputDecoration(
                       label:  Text('Email',style: TextStyle(fontSize: 20),),
                       prefixIcon:  Icon(Icons.email),
@@ -62,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
                 child: TextFormField(
+                  controller: PasswordController,
                   decoration: const InputDecoration(
                       label:  Text('Password',style: TextStyle(fontSize: 20),),
                       prefixIcon:  Icon(Icons.lock),
@@ -94,7 +112,9 @@ class _LoginPageState extends State<LoginPage> {
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(Colors.black),
                     ),
-                    onPressed: (){},
+                    onPressed: (){
+                      signin();
+                    },
                   ),
                 ),
               ),

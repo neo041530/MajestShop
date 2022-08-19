@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "450945608724",
+    "project_id": "majestyshop-eb1a7",
+    "storage_bucket": "majestyshop-eb1a7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450945608724:android:f84a20e5a780702b0e4b01",
+        "android_client_info": {
+          "package_name": "neo.neoproject.majestyshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "450945608724-kdj6o767bgj7vk35lerotkltob3osof2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrBX5F3s6OxI5CSAgpZO9FPsS7GHBTYSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "450945608724-kdj6o767bgj7vk35lerotkltob3osof2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

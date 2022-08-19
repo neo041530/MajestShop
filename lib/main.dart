@@ -38,14 +38,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: BottomBarIndex == 0 ? null :AppBar(
-      //   centerTitle: true,
-      //   backgroundColor: Colors.black,
-      //   elevation: 0,
-      //   title: BottomBarIndex == 1 ? Text('Favorite',):
-      //   BottomBarIndex == 2 ? Text('Message',):
-      //   BottomBarIndex == 3 ? Text('Person',): null,
-      // ),
       body:BottomBarPage[BottomBarIndex],
       bottomNavigationBar: ConvexAppBar(
         backgroundColor: Colors.black,

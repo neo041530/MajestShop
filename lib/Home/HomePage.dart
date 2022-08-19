@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -29,6 +30,21 @@ class Series{
       Type : json['Type']
   );
 }
+
+class TypeTitle{
+  final List<dynamic> typeTitle;
+
+  TypeTitle({required this.typeTitle});
+
+  Map<String, dynamic> toJson() => {
+    'Type' : Type
+  };
+
+  static TypeTitle fromJson(Map<String,dynamic> json) => TypeTitle(
+      typeTitle : json['TypeTitle']
+  );
+}
+
 class HotSearch{
   final String id;
   final String Name;
@@ -65,7 +81,28 @@ class _HomePageState extends State<HomePage> {
             Series.fromJson(e.data())
           ).toList()
         );
+
+  Stream<List<TypeTitle>> ReadAllProductTitle() =>
+      FirebaseFirestore.instance
+          .collection('TypeTitle').where('TypeTitleText',isEqualTo: 'AllProduct')
+          .snapshots()
+          .map((event) =>
+            event.docs.map((e) =>
+              TypeTitle.fromJson(e.data())
+            ).toList()
+        );
+
+  Stream<List<SeriesProduct>> ReadAllProduct() =>
+      FirebaseFirestore.instance
+          .collection('Product')
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              SeriesProduct.fromJson(e.data())
+          ).toList()
+      );
   void initState(){
+    print(FirebaseAuth.instance.currentUser);
     hotsearch = [
       HotSearch('1', 'Driver', 'assets/drive.png'),
       HotSearch('2', '7icon', 'assets/ironback.png'),
@@ -390,197 +427,148 @@ class _HomePageState extends State<HomePage> {
   Widget TabTwo(width,height){
     return Scaffold(
       backgroundColor: Colors.grey,
-      body: Builder(
-        builder: (context) {
-          return CustomScrollView(
-            controller: _scrollController,
-            slivers : [
-              SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-              SliverList(
-                  delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text('開球杆',style:GoogleFonts.lato(fontSize: 30)),
-                        ),
-                        SizedBox(
-                          width: width*0.5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Card(
-                                clipBehavior: Clip.antiAlias,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15)
-                                ),
-                                child: InkWell(
-                                  onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (context) => ProductPage(id: 1,))
-                                    );
-                                  } ,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Ink.image(
-                                            image: const AssetImage('assets/drive.png'),
-                                            height: 150,
-                                            width: width*0.5,
-                                            fit: BoxFit.cover,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: GestureDetector(
-                                                onTap: (){
+      body: StreamBuilder<List<TypeTitle>>(
+        stream: ReadAllProductTitle(),
+        builder: (context, snapshot) {
+          if(snapshot.hasError){
+            final error = snapshot.error;
+            print(error.toString());
+            return Text(error.toString());
+          }else if(snapshot.hasData){
+            List<TypeTitle> title= snapshot.data!;
+            return CustomScrollView(
+                controller: _scrollController,
+                slivers : [
+                  SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+                  SliverList(
+                      delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                        return StreamBuilder<List<SeriesProduct>>(
+                          stream: ReadAllProduct(),
+                          builder: (context, snapshot) {
+                            if(snapshot.hasError){
+                              final error = snapshot.error;
+                              print(error.toString());
+                              return Text(error.toString());
+                            }else if(snapshot.hasData){
+                              List<SeriesProduct> product = snapshot.data!.where((element) => element.Type == title[0].typeTitle[index] ).toList();
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
+                                  ),
+                                  SizedBox(
+                                    height: 300,
+                                    child: ListView.builder(
+                                      itemCount: product.length,
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        return SizedBox(
+                                          width: size.width*0.55,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Card(
+                                                clipBehavior: Clip.antiAlias,
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(15)
+                                                ),
+                                                child: InkWell(
+                                                  onTap: (){
+                                                    Navigator.push(context, MaterialPageRoute(
+                                                        builder: (context) => ProductPage(id: product[index].id,))
+                                                    );
+                                                  } ,
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 5,
+                                                        child: Stack(
+                                                          alignment: Alignment.topRight,
+                                                          children: [
+                                                            Ink.image(
+                                                              image: NetworkImage(product[index].Photo[0]),
+                                                              height: 150,
+                                                              width: width*0.5,
+                                                              fit: BoxFit.fitHeight,
+                                                            ),
+                                                            Padding(
+                                                              padding: const EdgeInsets.all(5.0),
+                                                              child: GestureDetector(
+                                                                  onTap: (){
 
-                                                },
-                                                child: const Icon(Icons.favorite_border)
+                                                                  },
+                                                                  child: const Icon(Icons.favorite_border)
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 4,
+                                                        child: Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Padding(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                              child: Text(product[index].Name.replaceAll('\\n', '\n'),
+                                                                textAlign: TextAlign.start,
+                                                                style: const TextStyle(fontSize: 20),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                              child: FittedBox(
+                                                                  child: Text('售價 : ${product[index].Price}',style:const TextStyle(fontSize: 20)
+                                                                  )
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                              child: Container(
+                                                                  padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+                                                                  decoration: BoxDecoration(
+                                                                      color: product[index].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
+                                                                      //border: Border.all(),
+                                                                      borderRadius: BorderRadius.circular(10)
+                                                                  ),
+                                                                  child: Text(
+                                                                      product[index].Gender,
+                                                                      style: TextStyle(fontSize: 18,color: Colors.white)
+                                                                  )
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('CONQUEST Driver',style: TextStyle(fontSize: 20),),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('售價 : 10000',style: TextStyle(fontSize: 20)),
-                                      )
-                                    ],
+                                        );
+                                      },
+                                    ),
                                   ),
-                                )
-                            ),
-                          ),
-                        ),
-                        Divider(
-                          thickness: 2,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text('木杆',style:GoogleFonts.lato(fontSize: 30)),
-                        ),
-                        SizedBox(
-                          width: width*0.5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Card(
-                                clipBehavior: Clip.antiAlias,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15)
-                                ),
-                                child: InkWell(
-                                  onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (context) => ProductPage(id: 1,))
-                                    );
-                                  } ,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Ink.image(
-                                            image: const AssetImage('assets/wood.png'),
-                                            height: 150,
-                                            width: width*0.5,
-                                            fit: BoxFit.cover,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: GestureDetector(
-                                                onTap: (){
-
-                                                },
-                                                child: const Icon(Icons.favorite_border)
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('CONQUEST 3wood',style: TextStyle(fontSize: 20),),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('售價 : 6000',style: TextStyle(fontSize: 20)),
-                                      )
-                                    ],
+                                  const Divider(
+                                    thickness: 2,
                                   ),
-                                )
-                            ),
-                          ),
-                        ),
-                        Divider(
-                          thickness: 2,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text('鐵杆',style:GoogleFonts.lato(fontSize: 30)),
-                        ),
-                        SizedBox(
-                          width: width*0.5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Card(
-                                clipBehavior: Clip.antiAlias,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15)
-                                ),
-                                child: InkWell(
-                                  onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (context) => ProductPage(id: 1,))
-                                    );
-                                  } ,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Ink.image(
-                                            image: const AssetImage('assets/ironback.png'),
-                                            height: 150,
-                                            width: width*0.5,
-                                            fit: BoxFit.cover,
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: GestureDetector(
-                                                onTap: (){
-
-                                                },
-                                                child: const Icon(Icons.favorite_border)
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('CONQUEST 7iron',style: TextStyle(fontSize: 20),),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                                        child: Text('售價 : 4000',style: TextStyle(fontSize: 20)),
-                                      )
-                                    ],
-                                  ),
-                                )
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },childCount: 1)
-              )
-            ]
-          );
+                                ],
+                              );
+                            }else{
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                          }
+                        );
+                      },childCount: title[0].typeTitle.length)
+                  )
+                ]
+            );
+          }else{
+            return const Center(child: CircularProgressIndicator());
+          }
         }
       ),
     );

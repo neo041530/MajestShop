@@ -42,7 +42,9 @@ dependencies:
   badges: ^2.0.3
   firebase_core: ^1.20.0
   cloud_firestore: ^3.4.4
+  firebase_auth: ^3.6.3
   photo_view: ^0.14.0
+  like_button: ^2.0.4
 
 dev_dependencies:
   flutter_test:
@@ -67,24 +69,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.jpg
-    - assets/One.png
     - assets/logobackground.png
-    - assets/majestyVideos.mp4
-    - assets/drive.png
-    - assets/drive.jpeg
-    - assets/iron.png
-    - assets/Conquest.mp4
-    - assets/Test.png
-    - assets/ironback.png
-    - assets/wood.png
     - assets/LoginBackground.jpeg
     - assets/Back.jpeg
-    - assets/PRESTIGIOXII.png
-    - assets/Royale21.png
-    - assets/PRESTIGIOXI.png
-    - assets/PRESTIGIOXIVideo.mp4
-    - assets/RoyaleVideo.mp4
-    - assets/PRESTIGIO XII W3 8I.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

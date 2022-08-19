@@ -10,15 +10,17 @@ class SeriesProduct{
   final List<dynamic> Photo;
   final String Price;
   final String Type;
+  final String Gender;
 
-  SeriesProduct({required this.id,required this.Name,required this.Photo,required this.Price,required this.Type});
+  SeriesProduct({required this.id,required this.Name,required this.Photo,required this.Price,required this.Type,required this.Gender});
 
   Map<String, dynamic> toJson() => {
     'id' : id,
     'Name' : Name,
     'Photo' : Photo,
     'Video' : Price,
-    'Type' : Type
+    'Type' : Type,
+    'Gender' : Gender
   };
 
   static SeriesProduct fromJson(Map<String,dynamic> json) => SeriesProduct(
@@ -26,7 +28,8 @@ class SeriesProduct{
       Name : json['Name'],
       Photo : json['Photo'],
       Price : json['Price'],
-      Type : json['Type']
+      Type : json['Type'],
+      Gender : json['Gender']
   );
 }
 
@@ -181,7 +184,6 @@ class _SeriesPageState extends State<SeriesPage> {
                                                 alignment: Alignment.topRight,
                                                 children: [
                                                   Ink.image(
-                                                    //image: const AssetImage('assets/PRESTIGIO XII W3 8I.png'),
                                                     image: NetworkImage(series[i].Photo[0]),
                                                     height: 150,
                                                     width: size.width*0.5,
@@ -191,7 +193,6 @@ class _SeriesPageState extends State<SeriesPage> {
                                                     padding: const EdgeInsets.all(5.0),
                                                     child: GestureDetector(
                                                         onTap: (){
-
                                                         },
                                                         child: const Icon(Icons.favorite_border)
                                                     ),
@@ -200,22 +201,43 @@ class _SeriesPageState extends State<SeriesPage> {
                                               ),
                                             ),
                                             Expanded(
-                                              flex: 2,
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                child: Text(series[i].Name,
-                                                  textAlign: TextAlign.start,
-                                                  style: const TextStyle(fontSize: 20),
-                                                ),
+                                              flex: 4,
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                    child: Text(series[i].Name.replaceAll('\\n', '\n'),
+                                                      textAlign: TextAlign.start,
+                                                      style: const TextStyle(fontSize: 20),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                    child: FittedBox(
+                                                      child: Text('售價 : ${series[i].Price}',style:const TextStyle(fontSize: 20)
+                                                      )
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+                                                      decoration: BoxDecoration(
+                                                        color: series[i].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
+                                                        //border: Border.all(),
+                                                        borderRadius: BorderRadius.circular(10)
+                                                      ),
+                                                      child: Text(
+                                                        series[i].Gender,
+                                                        style: TextStyle(fontSize: 18,color: Colors.white)
+                                                      )
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                child: Text('售價 : ${series[i].Price}',style: TextStyle(fontSize: 20)),
-                                              ),
-                                            )
                                           ],
                                         ),
                                       )
