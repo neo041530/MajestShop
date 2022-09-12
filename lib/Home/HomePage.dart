@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:majestyshop/ProductPage.dart';
+import 'package:majestyshop/SearchDonePage.dart';
 import 'package:majestyshop/SeriesPage.dart';
+import 'package:majestyshop/ShoppingCarPage.dart';
+
 class Series{
   final int id;
   final String Name;
@@ -46,11 +48,64 @@ class TypeTitle{
 }
 
 class HotSearch{
-  final String id;
+  final int id;
   final String Name;
   final String Photo;
 
-  HotSearch(this.id, this.Name, this.Photo);
+  HotSearch({required this.id,required this.Name,required this.Photo});
+
+  Map<String, dynamic> toJson() => {
+    'id' : id,
+    'Name' : Name,
+    'Photo' : Photo
+  };
+
+  static HotSearch fromJson(Map<String,dynamic> json) => HotSearch(
+    id : json['id'],
+    Name : json['Name'],
+    Photo : json['Photo'],
+  );
+}
+
+class NewSeries{
+  final String Name;
+  final String Photo;
+  final String Series;
+  final String Video;
+  final List<dynamic> Type;
+
+  NewSeries({required this.Name,required this.Photo,required this.Series,required this.Video,required this.Type});
+
+  Map<String, dynamic> toJson() => {
+    'Name' : Name,
+    'Photo' : Photo,
+    'Series' : Series,
+    'Video': Video,
+    'Type' : Type
+
+  };
+
+  static NewSeries fromJson(Map<String,dynamic> json) => NewSeries(
+    Name : json['Name'],
+    Photo : json['Photo'],
+    Series :json['Series'],
+    Video:json['Video'],
+    Type :json['Type']
+  );
+}
+
+class SearchHistory{
+  final String Name;
+
+  SearchHistory({required this.Name});
+
+  Map<String, dynamic> toJson() => {
+    'Name' : Name,
+  };
+
+  static SearchHistory fromJson(Map<String,dynamic> json) => SearchHistory(
+    Name : json['Name'],
+  );
 }
 
 class HomePage extends StatefulWidget {
@@ -61,12 +116,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<HotSearch> hotsearch = [];
-  List<String> searchhistory = ['Driver','7iron'];
   final ScrollController _scrollController = ScrollController();
   var Focus = FocusNode();
   var size;
-  var SearchFocus = FocusNode();
   var TabBarIndex = [
     '系列',
     '全部'
@@ -101,158 +153,16 @@ class _HomePageState extends State<HomePage> {
               SeriesProduct.fromJson(e.data())
           ).toList()
       );
+
+
   void initState(){
-    print(FirebaseAuth.instance.currentUser);
-    hotsearch = [
-      HotSearch('1', 'Driver', 'assets/drive.png'),
-      HotSearch('2', '7icon', 'assets/ironback.png'),
-      HotSearch('3', '3wood', 'assets/wood.png'),
-      HotSearch('3', '3wood', 'assets/wood.png'),
-      HotSearch('1', 'Driver', 'assets/drive.png'),
-      HotSearch('2', '7icon', 'assets/ironback.png'),
-    ];
     Focus.addListener(() {
       if(Focus.hasFocus) {
-        Seach();
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) => const SearchPage()));
         Focus.unfocus();
       }
     });
-  }
-  void Seach(){
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Scaffold(
-          //backgroundColor: Colors.grey,
-          body: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                backgroundColor: Colors.black,
-                automaticallyImplyLeading: false,
-                pinned: true,
-                title: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios),
-                      onPressed: (){
-                        Navigator.pop(context);
-                      },
-                    ),
-                    Expanded(
-                      child: TextField(
-                        focusNode: SearchFocus,
-                        autofocus: true,
-                        //controller: search_text,
-                        decoration: const InputDecoration(
-                            fillColor: Colors.white,
-                            filled: true,
-                            prefixIcon: Icon(Icons.search),
-                            hintText: '搜尋商品',
-                            enabledBorder: UnderlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                              borderSide: BorderSide(color: Colors.white)
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(50)),
-                              borderSide: BorderSide(color: Colors.white)
-                            )
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.filter_alt),
-                      onPressed:(){},
-                    )
-                  ],
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Container(
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey)
-                      )
-                    ),
-                    child: Banner(
-                      message: 'NEW',
-                      location: BannerLocation.topEnd,
-                      child: ListTile(
-                        leading: Text('最新上市 PRESTIGIO XII',style: TextStyle(fontSize: 20),),
-                        trailing: Image.asset('assets/Test.png'),
-                      ),
-                    ),
-                  )
-                ]),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                  return Container(
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey)
-                      )
-                    ),
-                    child: ListTile(
-                      leading: Text(searchhistory[index],
-                        style: const TextStyle(fontSize: 20),
-                      )
-                    ),
-                  );
-                },childCount: searchhistory.length)
-              ),
-              SliverList(
-                //itemExtent: size.height*0.25,
-                delegate: SliverChildListDelegate([
-                  Container(
-                    height: 10,
-                    color: Colors.grey[350],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 15),
-                    child: Text('熱門搜尋',style: TextStyle(fontSize: 20),),
-                  ),
-                  Wrap(
-                    children: List.generate(hotsearch.length, (index) =>
-                      Container(
-                        width: size.width*0.5,
-                        height: size.height*0.1,
-                        decoration: index == 0 || index ==2 || index ==4?BoxDecoration(
-                          border: index ==4 ?const Border(
-                            top: BorderSide(color: Colors.grey),
-                            right: BorderSide(color: Colors.grey),
-                            bottom: BorderSide(color: Colors.grey),
-                          ):const Border(
-                            top: BorderSide(color: Colors.grey),
-                            right: BorderSide(color: Colors.grey),
-                          ),
-                        ): BoxDecoration(
-                          border: index == 5 ? const Border(
-                            top: BorderSide(color: Colors.grey),
-                            bottom: BorderSide(color: Colors.grey),
-                          ):const Border(
-                            top: BorderSide(color: Colors.grey),
-                          )
-                        ),
-                        child: Center(
-                          child: ListTile(
-                            onTap: (){
-                              print(index);
-                            },
-                            leading: Text(hotsearch[index].Name,style: TextStyle(fontSize: 20),),
-                            trailing: Image.asset(hotsearch[index].Photo),
-                          ),
-                        ),
-                      )
-                    ).toList()
-                  ),
-                ]),
-              )
-            ],
-          ),
-        );
-      },
-    );
   }
   @override
   void dispose() {
@@ -302,23 +212,21 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     IconButton(
-                      onPressed:(){},
+                      onPressed:(){
+                        Navigator.push(context, MaterialPageRoute(
+                            builder: (context) =>
+                          ShoppingCarPage()
+                        ));
+                      },
                       icon: Icon(Icons.shopping_cart)
                     ),
-                    // Badge(
-                    //   badgeContent: Text('4'),
-                    //   child: IconButton(
-                    //     onPressed:(){},
-                    //     icon: Icon(Icons.shopping_cart)
-                    //   ),
-                    // )
                   ],
                 ),
                 bottom: TabBar(
                   indicatorColor: Colors.white,
                   tabs: TabBarIndex.map((e) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(e,style: const TextStyle(fontSize: 20),),
+                    child: Text(e,style: Theme.of(context).textTheme.headline1),
                   )).toList(),
                 ),
               ),
@@ -355,62 +263,7 @@ class _HomePageState extends State<HomePage> {
                     SliverFixedExtentList(
                       itemExtent: height*0.25,
                       delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                        return  GestureDetector(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) =>
-                                SeriesPage(Type:series[index].Type,Video: series[index].Video,Name:series[index].Name ,)
-                            ));
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10 ,horizontal: 20),
-                            child: Stack(
-                              children: [
-                                Column(
-                                  children: [
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    Container(
-                                      height: height*0.2,
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(15)
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                              flex: 3,
-                                              child: Container()
-                                          ),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Text('MAJESTY\n${series[index].Name}',
-                                                style: GoogleFonts.lato(
-                                                  fontSize: 25,
-                                                )
-                                              ),
-                                            )
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Positioned(
-                                  top: -30,
-                                  //left: 30,
-                                  child: SizedBox(
-                                    height: height*0.25,
-                                    child: Image.network(series[index].Photo),
-                                  )
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                        return SeriesCard(Type: series[index].Type, Video: series[index].Video, Name: series[index].Name, Photo: series[index].Photo, height: height);
                       },childCount: series.length),
                     ),
                   ],
@@ -464,91 +317,9 @@ class _HomePageState extends State<HomePage> {
                                       itemCount: product.length,
                                       scrollDirection: Axis.horizontal,
                                       itemBuilder: (BuildContext context, int index) {
-                                        return SizedBox(
-                                          width: size.width*0.55,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Card(
-                                                clipBehavior: Clip.antiAlias,
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(15)
-                                                ),
-                                                child: InkWell(
-                                                  onTap: (){
-                                                    Navigator.push(context, MaterialPageRoute(
-                                                        builder: (context) => ProductPage(id: product[index].id,))
-                                                    );
-                                                  } ,
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 5,
-                                                        child: Stack(
-                                                          alignment: Alignment.topRight,
-                                                          children: [
-                                                            Ink.image(
-                                                              image: NetworkImage(product[index].Photo[0]),
-                                                              height: 150,
-                                                              width: width*0.5,
-                                                              fit: BoxFit.fitHeight,
-                                                            ),
-                                                            Padding(
-                                                              padding: const EdgeInsets.all(5.0),
-                                                              child: GestureDetector(
-                                                                  onTap: (){
-
-                                                                  },
-                                                                  child: const Icon(Icons.favorite_border)
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        flex: 4,
-                                                        child: Column(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Padding(
-                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                              child: Text(product[index].Name.replaceAll('\\n', '\n'),
-                                                                textAlign: TextAlign.start,
-                                                                style: const TextStyle(fontSize: 20),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                              child: FittedBox(
-                                                                  child: Text('售價 : ${product[index].Price}',style:const TextStyle(fontSize: 20)
-                                                                  )
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                              child: Container(
-                                                                  padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
-                                                                  decoration: BoxDecoration(
-                                                                      color: product[index].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
-                                                                      //border: Border.all(),
-                                                                      borderRadius: BorderRadius.circular(10)
-                                                                  ),
-                                                                  child: Text(
-                                                                      product[index].Gender,
-                                                                      style: TextStyle(fontSize: 18,color: Colors.white)
-                                                                  )
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                            ),
-                                          ),
-                                        );
+                                        return ProductCard(id: product[index].id, Photo: product[index].Photo[0],
+                                            Name: product[index].Name, Price: product[index].Price,
+                                            Gender: product[index].Gender, width: width);
                                       },
                                     ),
                                   ),
@@ -575,3 +346,477 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class ProductCard extends StatefulWidget {
+  const ProductCard({Key? key, required this.id, required this.Photo, required this.Name,
+    required this.Price, required this.Gender, required this.width}) : super(key: key);
+  final int id;
+  final String Photo;
+  final String Name;
+  final String Price;
+  final String Gender;
+  final double width;
+
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.width*0.55,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Card(
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15)
+            ),
+            child: InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => ProductPage(id: widget.id,))
+                );
+              } ,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Ink.image(
+                          image: NetworkImage(widget.Photo),
+                          height: 150,
+                          width: widget.width*0.5,
+                          fit: BoxFit.fitHeight,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: GestureDetector(
+                              onTap: (){
+
+                              },
+                              child: const Icon(Icons.favorite_border)
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FittedBox(
+                                child: Text(widget.Name.replaceAll('\\n', '\n').split('\n')[0],
+                                  textAlign: TextAlign.start,
+                                  style: Theme.of(context).textTheme.headline2
+                                ),
+                              ),
+                              FittedBox(
+                                child: Text(widget.Name.replaceAll('\\n', '\n').split('\n')[1],
+                                  textAlign: TextAlign.start,
+                                  style: Theme.of(context).textTheme.headline2
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: FittedBox(
+                              child: Text('售價 : ${widget.Price}',style:Theme.of(context).textTheme.headline2)
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
+                              decoration: BoxDecoration(
+                                  color: widget.Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: Text(
+                                  widget.Gender,
+                                  style: Theme.of(context).textTheme.headline3
+                              )
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+        ),
+      ),
+    );
+  }
+}
+
+class SeriesCard extends StatefulWidget {
+  const SeriesCard({Key? key, required this.Type, required this.Video, required this.Name, required this.Photo, required this.height}) : super(key: key);
+  final List<dynamic> Type;
+  final String Video;
+  final String Name;
+  final String Photo;
+  final double height;
+
+  @override
+  State<SeriesCard> createState() => _SeriesCardState();
+}
+
+class _SeriesCardState extends State<SeriesCard> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) =>
+                SeriesPage(Type:widget.Type,Video: widget.Video,
+                  Name:widget.Name)
+        ));
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10 ,horizontal: 20),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  height: widget.height*0.2,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15)
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          flex: 3,
+                          child: Container()
+                      ),
+                      Expanded(
+                          flex: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('MAJESTY\n${widget.Name}',
+                                style: GoogleFonts.lato(
+                                  fontSize: 25,
+                                )
+                            ),
+                          )
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+                top: -30,
+                //left: 30,
+                child: SizedBox(
+                  height: widget.height*0.25,
+                  child: Image.network(widget.Photo),
+                )
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SearchPage extends StatefulWidget {
+  const SearchPage({Key? key}) : super(key: key);
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  var SearchFocus = FocusNode();
+  var Date = DateTime.now();
+  //TextEditingController Search = TextEditingController();
+
+  Future AddHistory(SearchString) async {
+    await FirebaseFirestore.instance.collection('SearchHistory')
+        .doc('${FirebaseAuth.instance.currentUser?.email}$SearchString')
+        .set({
+      'Email' : FirebaseAuth.instance.currentUser?.email,
+      'Name' : SearchString,
+      'Time' : Date
+    }).then((value) =>
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) => SearchDonePage(SearchString:SearchString))
+        )
+    ).onError((error, stackTrace) => null);
+  }
+
+  Stream<List<NewSeries>> ReadNewSeries() =>
+      FirebaseFirestore.instance
+          .collection('HotSeach').where('TypeTitle',isEqualTo: 'NewSeries')
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              NewSeries.fromJson(e.data())
+          ).toList()
+      );
+  Stream<List<HotSearch>> ReadHotSearchProduct() =>
+      FirebaseFirestore.instance
+          .collection('HotSeach').where('Type',isEqualTo: 'HotSearch').orderBy('HotNumber')
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              HotSearch.fromJson(e.data())
+          ).toList()
+      );
+
+  Stream<List<SearchHistory>> ReadSearchHistory(email) =>
+      FirebaseFirestore.instance
+          .collection('SearchHistory').where('Email',isEqualTo: email).orderBy('Time',descending: true)
+          .snapshots()
+          .map((event) =>
+          event.docs.map((e) =>
+              SearchHistory.fromJson(e.data())
+          ).toList()
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    return Scaffold(
+      body: StreamBuilder<List<NewSeries>>(
+          stream: ReadNewSeries(),
+          builder: (context, snapshot) {
+            if(snapshot.hasError){
+              final error = snapshot.error;
+              print(error.toString());
+              return Text(error.toString());
+            }else if(snapshot.hasData){
+              List<NewSeries> newseries = snapshot.data!;
+              return CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    backgroundColor: Colors.black,
+                    automaticallyImplyLeading: false,
+                    pinned: true,
+                    title: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios),
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                        ),
+                        Expanded(
+                          child: TextField(
+                            focusNode: SearchFocus,
+                            autofocus: true,
+                            //controller: Search,
+                            onSubmitted:(value){
+                              if(value.isNotEmpty){
+                                AddHistory(value);
+                              }
+                            },
+                            decoration: const InputDecoration(
+                                fillColor: Colors.white,
+                                filled: true,
+                                prefixIcon: Icon(Icons.search),
+                                hintText: '搜尋商品',
+                                enabledBorder: UnderlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                                    borderSide: BorderSide(color: Colors.white)
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(50)),
+                                    borderSide: BorderSide(color: Colors.white)
+                                )
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.filter_alt),
+                          onPressed:(){},
+                        )
+                      ],
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildListDelegate([
+                      Container(
+                        decoration: const BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(color: Colors.grey)
+                            )
+                        ),
+                        child: Banner(
+                          message: 'NEW',
+                          location: BannerLocation.topEnd,
+                          child: ListTile(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) =>
+                                      SeriesPage(Type:newseries[0].Type,Video: newseries[0].Video,Name:newseries[0].Series ,)
+                              ));
+                            },
+                            leading: Text(newseries[0].Name,style: Theme.of(context).textTheme.headline2),
+                            trailing: Padding(
+                              padding: const EdgeInsets.only(right: 30.0),
+                              child: Image.network(newseries[0].Photo),
+                            ),
+                          ),
+                        ),
+                      )
+                    ]),
+                  ),
+                  StreamBuilder<User?>(
+                    stream: FirebaseAuth.instance.authStateChanges(),
+                    builder: (context, snapshot) {
+                      if(snapshot.hasError){
+                        final error = snapshot.error;
+                        print(error.toString());
+                        return Text(error.toString());
+                      }else if(snapshot.hasData){
+                        final user = snapshot.data;
+                        return StreamBuilder<List<SearchHistory>>(
+                          stream: ReadSearchHistory(user!.email),
+                          builder: (context, snapshot) {
+                            if(snapshot.hasError){
+                              final error = snapshot.error;
+                              print(error.toString());
+                              return Text(error.toString());
+                            }else if(snapshot.hasData){
+                              List<SearchHistory> search = snapshot.data!;
+                              if(search.length>6){
+                                search.removeRange( 6, search.length);
+                              }
+                              return SliverList(
+                                  delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                                    return Container(
+                                      decoration: const BoxDecoration(
+                                          border: Border(
+                                              bottom: BorderSide(color: Colors.grey)
+                                          )
+                                      ),
+                                      child: ListTile(
+                                          onTap: (){
+                                            AddHistory(search[index].Name);
+                                          },
+                                          leading: Text(search[index].Name,
+                                            style: Theme.of(context).textTheme.headline2
+                                          )
+                                      ),
+                                    );
+                                  },childCount: search.length)
+                              );
+                            }else{
+                              return SliverList(
+                                delegate: SliverChildListDelegate([]),
+                              );
+                            }
+
+                          }
+                        );
+                      }else{
+                        return SliverList(
+                          delegate: SliverChildListDelegate([]),
+                        );
+                      }
+                    }
+                  ),
+                  SliverList(
+                    //itemExtent: size.height*0.25,
+                    delegate: SliverChildListDelegate([
+                      Container(
+                        height: 10,
+                        color: Colors.grey[350],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
+                        child: Text('熱門搜尋',style: Theme.of(context).textTheme.headline2),
+                      ),
+                      StreamBuilder<List<HotSearch>>(
+                          stream: ReadHotSearchProduct(),
+                          builder: (context, snapshot) {
+                            if(snapshot.hasError){
+                              final error = snapshot.error;
+                              print(error.toString());
+                              return Text(error.toString());
+                            }else if(snapshot.hasData){
+                              List<HotSearch> hotsearch = snapshot.data!;
+                              print(hotsearch.length);
+                              return Wrap(
+                                  children :  List.generate(hotsearch.length,(index)=>
+                                      Container(
+                                          width: size.width*0.5,
+                                          height: size.height*0.1,
+                                          decoration: index == 0 || index ==2 || index ==4?BoxDecoration(
+                                            border: index ==4 ?const Border(
+                                              top: BorderSide(color: Colors.grey),
+                                              right: BorderSide(color: Colors.grey),
+                                              bottom: BorderSide(color: Colors.grey),
+                                            ):const Border(
+                                              top: BorderSide(color: Colors.grey),
+                                              right: BorderSide(color: Colors.grey),
+                                            ),
+                                          ): BoxDecoration(
+                                              border: index == 5 ? const Border(
+                                                top: BorderSide(color: Colors.grey),
+                                                bottom: BorderSide(color: Colors.grey),
+                                              ):const Border(
+                                                top: BorderSide(color: Colors.grey),
+                                              )
+                                          ),
+                                          child: GestureDetector(
+                                            onTap: (){
+                                              Navigator.push(context, MaterialPageRoute(
+                                                  builder: (context) => ProductPage(id: hotsearch[index].id))
+                                              );
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                    flex: 3,
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: FittedBox(child: Text(hotsearch[index].Name.replaceAll('\\n', '\n'),style: Theme.of(context).textTheme.headline2,)),
+                                                    )
+                                                ),
+                                                Expanded(
+                                                    child: Image.network(hotsearch[index].Photo)
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                      )
+                                  ).toList()
+                              );
+                            }else{
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                          }
+                      ),
+                    ]),
+                  )
+                ],
+              );
+            }else{
+              return const Center(child: CircularProgressIndicator());
+            }
+          }
+      ),
+    );
+  }
+}

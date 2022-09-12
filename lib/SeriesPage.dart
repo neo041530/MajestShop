@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:majestyshop/ProductPage.dart';
+import 'package:majestyshop/Home/HomePage.dart';
 import 'package:video_player/video_player.dart';
 
 class SeriesProduct{
@@ -142,108 +142,8 @@ class _SeriesPageState extends State<SeriesPage> {
                             itemCount: series.length,
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (BuildContext context, int i) {
-                              return SizedBox(
-                                width: size.width*0.55,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Card(
-                                      clipBehavior: Clip.antiAlias,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15)
-                                      ),
-                                      child: InkWell(
-                                        onTap: (){
-                                          controller.pause();
-                                          Navigator.push(
-                                              context, MaterialPageRoute(
-                                              builder: (context) => ProductPage(id: series[i].id,))
-                                          ).then((value) => controller.play());
-                                          // Navigator.of(context).push(
-                                          //   PageRouteBuilder(
-                                          //     transitionDuration: const Duration(seconds: 1),
-                                          //     reverseTransitionDuration: const Duration(seconds: 1),
-                                          //     pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-                                          //       final curvedAnimation = CurvedAnimation(
-                                          //         parent: animation,
-                                          //         curve: const Interval(0,0.5)
-                                          //       );
-                                          //       return FadeTransition(
-                                          //         opacity: curvedAnimation,
-                                          //         child:ProductPage(id: series[i].id)
-                                          //       );
-                                          //     }
-                                          //   )
-                                          // ).then((value) => controller.play());
-                                        } ,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              flex: 5,
-                                              child: Stack(
-                                                alignment: Alignment.topRight,
-                                                children: [
-                                                  Ink.image(
-                                                    image: NetworkImage(series[i].Photo[0]),
-                                                    height: 150,
-                                                    width: size.width*0.5,
-                                                    fit: BoxFit.fitHeight,
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(5.0),
-                                                    child: GestureDetector(
-                                                        onTap: (){
-                                                        },
-                                                        child: const Icon(Icons.favorite_border)
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 4,
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: Text(series[i].Name.replaceAll('\\n', '\n'),
-                                                      textAlign: TextAlign.start,
-                                                      style: const TextStyle(fontSize: 20),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: FittedBox(
-                                                      child: Text('售價 : ${series[i].Price}',style:const TextStyle(fontSize: 20)
-                                                      )
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
-                                                      decoration: BoxDecoration(
-                                                        color: series[i].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
-                                                        //border: Border.all(),
-                                                        borderRadius: BorderRadius.circular(10)
-                                                      ),
-                                                      child: Text(
-                                                        series[i].Gender,
-                                                        style: TextStyle(fontSize: 18,color: Colors.white)
-                                                      )
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                  ),
-                                ),
-                              );
+                              return ProductCard(id: series[i].id, Photo: series[i].Photo[0], Name: series[i].Name,
+                                Price: series[i].Price, Gender: series[i].Gender, width: size.width);
                             },
                           ),
                         ),

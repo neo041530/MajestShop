@@ -67,10 +67,10 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
                 child: TextFormField(
                   controller: EmailController,
-                  decoration: const InputDecoration(
-                      label:  Text('Email',style: TextStyle(fontSize: 20),),
-                      prefixIcon:  Icon(Icons.email),
-                      border: OutlineInputBorder(
+                  decoration: InputDecoration(
+                      label:  Text('Email',style: Theme.of(context).textTheme.headline2),
+                      prefixIcon: const Icon(Icons.email),
+                      border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15))
                       )
                   ),
@@ -80,10 +80,10 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
                 child: TextFormField(
                   controller: PasswordController,
-                  decoration: const InputDecoration(
-                      label:  Text('Password',style: TextStyle(fontSize: 20),),
-                      prefixIcon:  Icon(Icons.lock),
-                      border: OutlineInputBorder(
+                  decoration: InputDecoration(
+                      label:  Text('Password',style: Theme.of(context).textTheme.headline2),
+                      prefixIcon: const Icon(Icons.lock),
+                      border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15))
                       )
                   ),
@@ -128,8 +128,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text('用以下方式連接',style: TextStyle(fontSize: 20),)
+                children: [
+                  Text('用以下方式連接',style: Theme.of(context).textTheme.headline2)
                 ],
               ),
               const SizedBox(
@@ -161,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('還沒有帳號?',style: TextStyle(fontSize: 20),),
+                  Text('還沒有帳號?',style: Theme.of(context).textTheme.headline2),
                   const SizedBox(width: 10,),
                   GestureDetector(
                     child: const Text('註冊帳號',

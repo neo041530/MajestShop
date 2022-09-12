@@ -15,8 +15,29 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
-    const MaterialApp(debugShowCheckedModeBanner: false,
-      home: MyHomePage())
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        textTheme: const TextTheme(
+          headline1: TextStyle(
+            fontSize: 20,
+            color: Colors.white
+          ),
+          headline2: TextStyle(
+            fontSize: 20,
+            color: Colors.black
+          ),
+          headline3: TextStyle(
+            fontSize: 18,
+            color: Colors.white
+          ),
+          headline4: TextStyle(
+            fontSize: 26,
+            color: Colors.black
+          ),
+        )
+      ),
+      home: const MyHomePage())
   );
 }
 

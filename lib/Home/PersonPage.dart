@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:majestyshop/LoginPage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PersonPage extends StatefulWidget {
   const PersonPage({Key? key}) : super(key: key);
@@ -17,6 +18,15 @@ class _PersonPageState extends State<PersonPage> {
   //   await FirebaseFirestore.instance.collection('User')
   //       .doc('email').collection('favorite').doc('Driver').set({'id' : 1});
   // }
+
+  Future openURL (url) async{
+    url = Uri.parse('https://www.majesty-golf.com/tw/#feature-1');
+    if(await canLaunchUrl(url)){
+      await launchUrl(
+        url,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +77,7 @@ class _PersonPageState extends State<PersonPage> {
                           child: Column(
                             children: [
                               ListTile(
-                                title: const Text('聯絡客服',style: TextStyle(fontSize: 20),),
+                                title: Text('聯絡客服',style: Theme.of(context).textTheme.headline2),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: (){
                                   //createUser('neo0415@gmail.com');
@@ -77,7 +87,7 @@ class _PersonPageState extends State<PersonPage> {
                                 thickness: 2,
                               ),
                               ListTile(
-                                title: const Text('優惠訊息傳送',style: TextStyle(fontSize: 20),),
+                                title: Text('優惠訊息傳送',style: Theme.of(context).textTheme.headline2),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: (){},
                               ),
@@ -85,7 +95,7 @@ class _PersonPageState extends State<PersonPage> {
                                 thickness: 2,
                               ),
                               ListTile(
-                                title: const Text('尋找經銷商',style: TextStyle(fontSize: 20),),
+                                title: Text('尋找經銷商',style: Theme.of(context).textTheme.headline2),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: (){},
                               ),
@@ -93,7 +103,7 @@ class _PersonPageState extends State<PersonPage> {
                                 thickness: 2,
                               ),
                               ListTile(
-                                title: const Text('問題反饋',style: TextStyle(fontSize: 20),),
+                                title: Text('問題反饋',style: Theme.of(context).textTheme.headline2),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: (){},
                               ),
@@ -101,7 +111,7 @@ class _PersonPageState extends State<PersonPage> {
                                 thickness: 2,
                               ),
                               ListTile(
-                                title: const Text('登出',style: TextStyle(fontSize: 20),),
+                                title: Text('登出',style: Theme.of(context).textTheme.headline2),
                                 trailing: const Icon(Icons.arrow_forward_ios),
                                 onTap: (){},
                               )
@@ -120,9 +130,9 @@ class _PersonPageState extends State<PersonPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 10 ,horizontal: 15),
-                                child: Text('追蹤我們',style: TextStyle(fontSize: 20),),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10 ,horizontal: 15),
+                                child: Text('追蹤我們',style: Theme.of(context).textTheme.headline2),
                               ),
                               Row(
                                 children: [
@@ -158,7 +168,9 @@ class _PersonPageState extends State<PersonPage> {
                                   ),
                                   Expanded(
                                       child: GestureDetector(
-                                        onTap: (){},
+                                        onTap: (){
+                                          openURL('1');
+                                        },
                                         child: const Center(
                                             child: FaIcon(
                                               FontAwesomeIcons.youtube,size: 50,color: Colors.red,
@@ -172,16 +184,16 @@ class _PersonPageState extends State<PersonPage> {
                           ),
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Center(child: Text('版本 1.0.0',style: TextStyle(fontSize: 20,color: Colors.black),)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Center(child: Text('版本 1.0.0',style: Theme.of(context).textTheme.headline2)),
                       )
                     ])
                 )
               ],
             );
           }else{
-            return LoginPage();
+            return const LoginPage();
           }
         }
       ),

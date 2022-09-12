@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:like_button/like_button.dart';
 import 'package:majestyshop/CustomerService.dart';
+import 'package:majestyshop/Home/HomePage.dart';
 import 'package:majestyshop/ImageDetail.dart';
 
 import 'SeriesPage.dart';
@@ -23,7 +22,8 @@ class Product{
   final String Gender;
 
   Product({required this.id,required this.Name,required this.Introduce,
-    required this.Photo,required this.DetailTitle,required this.Detail,required this.Price,required this.Type,required this.Gender});
+    required this.Photo,required this.DetailTitle,required this.Detail,required this.Price,
+    required this.Type,required this.Gender});
 
   Map<String, dynamic> toJson() => {
     'id' : id,
@@ -60,7 +60,6 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
 
-  int oneIndex = 0;
   double pageindex = 0;
   PageController pageController = PageController();
   bool Login = FirebaseAuth.instance.currentUser?.uid != null;
@@ -100,7 +99,7 @@ class _ProductPageState extends State<ProductPage> {
       });
   }
 
-  Future AddFavorite(List<Product> product) async {
+  Future AddFavorite(List<Product> product,size,BuildContext context) async {
     await FirebaseFirestore.instance.collection('FavoritePage')
         .doc('F${FirebaseAuth.instance.currentUser?.email}${product[0].id}')//B是瀏覽F是最愛
         .set({
@@ -112,66 +111,23 @@ class _ProductPageState extends State<ProductPage> {
           'Type' : '最愛商品',
           'id' : product[0].id,
           'Date' : Date
-    });
+    }).then((value) =>
+      ShowFavoriteView(size,context)
+    ).onError((error, stackTrace) => null);
   }
 
-  void ShowFavoriteView(size){
-    final snackBar = SnackBar(
-      content: const Text('Yay! A SnackBar!'),
-      action: SnackBarAction(
-        label: 'Undo',
-        onPressed: () {
-          // Some code to undo the change.
-        },
-      ),
+  Future DeleteFavorite(List<Product> product ) async {
+    await FirebaseFirestore.instance.collection('FavoritePage')
+        .doc('F${FirebaseAuth.instance.currentUser?.email}${product[0].id}')//B是瀏覽F是最愛
+        .delete();
+  }
+
+  void ShowFavoriteView(size,BuildContext context){
+    const snackBar = SnackBar(
+      content: Text('已加入最愛商品!!'),
+      behavior: SnackBarBehavior.floating,
     );
-
-    // Find the ScaffoldMessenger in the widget tree
-    // and use it to show a SnackBar.
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     Future.delayed(Duration(seconds: 1),(){
-    //       Navigator.pop(context);
-    //     });
-    //     return Scaffold(
-    //       backgroundColor: Colors.transparent,
-    //       body: Center(
-    //         child: GestureDetector(
-    //           onTap: (){
-    //             Navigator.pop(context);
-    //           },
-    //           child: Container(
-    //             width: size.width*0.7,
-    //             height: size.height*0.15,
-    //             decoration: BoxDecoration(
-    //               color: Colors.white,
-    //               borderRadius: BorderRadius.circular(15)
-    //             ),
-    //             child: Column(
-    //               children: const[
-    //                 Expanded(
-    //                   child: Center(
-    //                     child: Icon(Icons.check_circle_outline_outlined,size: 40,)
-    //                   )
-    //                 ),
-    //                 Expanded(
-    //                   child: Center(
-    //                     child: FittedBox(
-    //                       child: Text('已加入最愛商品!!',style: TextStyle(fontSize: 25))
-    //                     )
-    //                   )
-    //                 ),
-    //               ],
-    //             ),
-    //           ),
-    //         ),
-    //       ),
-    //     );
-    //   }
-    // );
   }
 
   void CheckLogin(List<Product> product){
@@ -196,123 +152,11 @@ class _ProductPageState extends State<ProductPage> {
         });
   }
 
-  void ShowShoppingCart(height,List<Product> product){
+  void ShowShoppingCar(height,List<Product> product){
     showModalBottomSheet(
         context: context,
         builder: (context){
-          return StatefulBuilder(
-            builder: (BuildContext context, void Function(void Function()) setState) {
-              return SizedBox(
-                  height: height,
-                  child: Column(
-                    children: [
-                      Expanded(
-                          flex: 2,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                  flex: 2,
-                                  child: Center(child: Image.network(product[0].Photo[0],fit: BoxFit.cover,))
-                              ),
-                              Expanded(
-                                  flex: 3,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(product[0].Name.replaceAll('\\n', '\n'),style: const TextStyle(fontSize: 20)),
-                                      const SizedBox(height: 10),
-                                      Text(product[0].Price,style: const TextStyle(fontSize: 20))
-                                    ],
-                                  )
-                              ),
-                            ],
-                          )
-                      ),
-                      const Divider(
-                        thickness: 1,
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: ListView.builder(
-                          itemCount: product[0].DetailTitle.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            //int Index = 0;
-                            String Title = product[0].DetailTitle[index];
-                            List<dynamic> TitleDetail = product[0].Detail[Title];
-                            return SizedBox(
-                                width: double.infinity,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 10),
-                                      child: Text('${Title} :',style: TextStyle(fontSize: 20),),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                      child: Wrap(
-                                        spacing: 15,
-                                        children: List.generate(TitleDetail.length, (index) {
-                                          return ChoiceChip(
-                                            label: Text(TitleDetail[index],
-                                              style:TextStyle(
-                                                  color: oneIndex == index ? Colors.white : Colors.black
-                                              ),
-                                            ),
-                                            selectedColor: Colors.black,
-                                            selected: oneIndex == index,
-                                            onSelected: (v) {
-                                              setState(() {
-                                                oneIndex = index;
-                                              });
-                                            },
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Row(
-                          children: [
-                            const Text('數量 : ',style: TextStyle(fontSize: 20),),
-                            IconButton(onPressed: (){}, icon: Icon(Icons.remove)),
-                            Text('1',style: TextStyle(fontSize: 20),),
-                            IconButton(onPressed: (){}, icon: Icon(Icons.add)),
-                          ],
-                        ),
-                      ),
-                      const Divider(
-                        thickness: 1,
-                      ),
-                      Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10 ,horizontal: 10),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                child: Text('加入購物車',style: TextStyle(fontSize: 20),),
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(Colors.black),
-                                ),
-                                onPressed: (){},
-                              ),
-                            ),
-                          )
-                      ),
-                    ],
-                  )
-              );
-            },
-          );
+          return addShoppingCar(height: height,product: product);
         }
     );
   }
@@ -390,26 +234,16 @@ class _ProductPageState extends State<ProductPage> {
                               actions: [
                                 LikeButton(
                                   size: 30,
-                                  isLiked: Favorite,
+                                  isLiked: Favorite? true: false,
                                   onTap: (Favorite) async{
                                     if(Favorite){
-                                      print('1');
+                                      DeleteFavorite(product);
                                     }else{
-                                      ShowFavoriteView(size);
+                                      AddFavorite(product,size,context);
                                     }
                                     return !Favorite;
                                   },
                                 ),
-                                // Favorite ?IconButton(
-                                //   icon: const Icon(Icons.favorite,color: Colors.red),
-                                //   onPressed: () {
-                                //   },
-                                // ):IconButton(
-                                //   icon: const Icon(Icons.favorite_border),
-                                //   onPressed: (){
-                                //     ShowFavoriteView(size,product);
-                                //   },
-                                // ),
                                 IconButton(
                                     onPressed: (){},
                                     icon: const Icon(Icons.shopping_cart)
@@ -461,17 +295,17 @@ class _ProductPageState extends State<ProductPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 15),
-                                        child: Text('${Title} :',style: TextStyle(fontSize: 26),),
+                                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                                        child: Text('$Title :',style: Theme.of(context).textTheme.headline4,),
                                       ),
                                       Wrap(
                                         children: TitleDetail.map((e) =>
                                             Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 5 ,horizontal: 10),
+                                              padding: const EdgeInsets.symmetric(vertical: 5 ,horizontal: 10),
                                               child: RawChip(
-                                                label:Text(e,style: TextStyle(fontSize: 20),),
+                                                label:Text(e,style: Theme.of(context).textTheme.headline2),
                                                 backgroundColor: Colors.white,
-                                                padding: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+                                                padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 5),
                                               ),
                                             ),
                                         ).toList(),
@@ -485,22 +319,22 @@ class _ProductPageState extends State<ProductPage> {
                             ),
                             SliverList(
                                 delegate: SliverChildListDelegate([
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 15),
-                                    child: Text('商品詳情 :',style: TextStyle(fontSize: 26),),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                                    child: Text('商品詳情 :',style: Theme.of(context).textTheme.headline4),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical:10,horizontal: 15),
                                     child: Text(product[0].Introduce.replaceAll('\\n', '\n\n'),
-                                        style: const TextStyle(fontSize: 20)
+                                        style: Theme.of(context).textTheme.headline2
                                     ),
                                   ),
                                   const Divider(
                                     thickness: 5,
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 15),
-                                    child: Text('為你推薦',style: TextStyle(fontSize: 26)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                                    child: Text('為你推薦',style:  Theme.of(context).textTheme.headline4),
                                   ),
                                 ])
                             ),
@@ -510,95 +344,8 @@ class _ProductPageState extends State<ProductPage> {
                                   mainAxisExtent: 300
                               ),
                               delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                                return SizedBox(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Card(
-                                        clipBehavior: Clip.antiAlias,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(15)
-                                        ),
-                                        child: InkWell(
-                                          onTap: (){
-                                            Navigator.push(context, MaterialPageRoute(
-                                                builder: (context) => ProductPage(id: RecommendProduct[index].id,))
-                                            );
-                                          } ,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                flex: 5,
-                                                child: Stack(
-                                                  alignment: Alignment.topRight,
-                                                  children: [
-                                                    Ink.image(
-                                                      image: NetworkImage(RecommendProduct[index].Photo[0]),
-                                                      height: 150,
-                                                      width: size.width*0.5,
-                                                      fit: BoxFit.fitHeight,
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(5.0),
-                                                      child: GestureDetector(
-                                                          onTap: (){
-                                                          },
-                                                          child: const Icon(Icons.favorite_border)
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 4,
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                      child: Text(RecommendProduct[index].Name.split('\\n')[0],
-                                                        style: const TextStyle(fontSize: 20),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                      child: FittedBox(
-                                                        child: Text(RecommendProduct[index].Name.split('\\n')[1],
-                                                          style: const TextStyle(fontSize: 20),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                      child: FittedBox(
-                                                        child: Text('售價 : ${RecommendProduct[index].Price}',
-                                                          style: const TextStyle(fontSize: 20),)
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                      child: Container(
-                                                        padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
-                                                        decoration: BoxDecoration(
-                                                          color: RecommendProduct[index].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
-                                                          borderRadius: BorderRadius.circular(10)
-                                                        ),
-                                                        child: Text(
-                                                          RecommendProduct[index].Gender,
-                                                          style: const TextStyle(fontSize: 18,color: Colors.white)
-                                                        )
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                    ),
-                                  ),
-                                );
+                                return ProductCard(id: RecommendProduct[index].id, Photo: RecommendProduct[index].Photo[0], Name: RecommendProduct[index].Name,
+                                    Price: RecommendProduct[index].Price, Gender: RecommendProduct[index].Gender, width: size.width);
                               },childCount: RecommendProduct.length),
                             )
                           ],
@@ -614,7 +361,8 @@ class _ProductPageState extends State<ProductPage> {
                                     leading: const Icon(Icons.add_shopping_cart,color: Colors.white,),
                                     title: const Text('加入購物車',style: TextStyle(color: Colors.white),),
                                     onTap: (){
-                                      ShowShoppingCart(size.height,product);
+                                      ShowShoppingCar(size.height,product);
+                                      //addShoppingCar();
                                     },
                                   )
                               ),
@@ -627,8 +375,8 @@ class _ProductPageState extends State<ProductPage> {
                               ),
                               Expanded(
                                   child: ListTile(
-                                    leading: Icon(Icons.message,color: Colors.white,),
-                                    title: Text('聯絡客服',style: TextStyle(color: Colors.white),),
+                                    leading: const Icon(Icons.message,color: Colors.white,),
+                                    title: const Text('聯絡客服',style: TextStyle(color: Colors.white),),
                                     onTap: (){
                                       Navigator.push(context, MaterialPageRoute(
                                           builder: (context) => const CustomerService())
@@ -655,3 +403,197 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 }
+
+class addShoppingCar extends StatefulWidget {
+  const addShoppingCar({Key? key, required this.height, required this.product}) : super(key: key);
+  final double height;
+  final List<Product> product;
+
+  @override
+  State<addShoppingCar> createState() => _addShoppingCarState();
+}
+
+class _addShoppingCarState extends State<addShoppingCar> {
+  int oneIndex = 0;
+  int Number = 1;
+  @override
+  Widget build(BuildContext context) {
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setState) {
+        return SizedBox(
+            height: widget.height,
+            child: Column(
+              children: [
+                Expanded(
+                    flex: 2,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: Center(child: Image.network(widget.product[0].Photo[0],fit: BoxFit.cover,))
+                        ),
+                        Expanded(
+                            flex: 3,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(widget.product[0].Name.replaceAll('\\n', '\n'),style: Theme.of(context).textTheme.headline2),
+                                const SizedBox(height: 10),
+                                Text(widget.product[0].Price,style: Theme.of(context).textTheme.headline2)
+                              ],
+                            )
+                        ),
+                      ],
+                    )
+                ),
+                const Divider(
+                  thickness: 1,
+                ),
+                Expanded(
+                  flex: 3,
+                  child: ListView.builder(
+                    itemCount: widget.product[0].DetailTitle.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      String Title = widget.product[0].DetailTitle[index];
+                      List<dynamic> TitleDetail = widget.product[0].Detail[Title];
+                      return ChoiceChipList(Title: Title, Length: TitleDetail.length, TitleDetail: TitleDetail);
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      Text('數量 : ',style: Theme.of(context).textTheme.headline2),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                          //padding: EdgeInsets.symmetric(vertical: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all()
+                          ),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: (){
+                                  if(Number > 1){
+                                    setState(() {
+                                      Number--;
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      right: BorderSide()
+                                    )
+                                  ),
+                                  child: const Icon(Icons.remove)
+                                ),
+                              ),
+                              Padding(
+                                padding:  const EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(Number.toString(),style: Theme.of(context).textTheme.headline2),
+                              ),
+                              GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    Number++;
+                                  });
+                                },
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      left: BorderSide()
+                                    )
+                                  ),
+                                  child: const Icon(Icons.add)
+                                ),
+                              ),
+                            ],
+                          )
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(
+                  thickness: 1,
+                ),
+                Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 15 ,right: 15,top: 10,bottom: 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          child: Text('加入購物車',style: Theme.of(context).textTheme.headline1),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(Colors.black),
+                          ),
+                          onPressed: (){},
+                        ),
+                      ),
+                    )
+                ),
+              ],
+            )
+        );
+      },
+    );
+  }
+}
+class ChoiceChipList extends StatefulWidget {
+  const ChoiceChipList({Key? key, required this.Title, required this.Length, required this.TitleDetail}) : super(key: key);
+  final String Title;
+  final int Length;
+  final List<dynamic> TitleDetail;
+
+  @override
+  State<ChoiceChipList> createState() => _ChoiceChipListState();
+}
+
+class _ChoiceChipListState extends State<ChoiceChipList> {
+  int oneIndex = 0;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text('${widget.Title} :',style: Theme.of(context).textTheme.headline2),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Wrap(
+                spacing: 15,
+                children: List.generate(widget.Length, (index) {
+                  return ChoiceChip(
+                    label: Text(widget.TitleDetail[index],
+                      style:TextStyle(
+                          color: oneIndex == index ? Colors.white : Colors.black
+                      ),
+                    ),
+                    selectedColor: Colors.black,
+                    selected: oneIndex == index,
+                    onSelected: (v) {
+                      setState(() {
+                        oneIndex = index;
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+
+

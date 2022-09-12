@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:majestyshop/Home/HomePage.dart';
 import 'package:majestyshop/LoginPage.dart';
-import 'package:majestyshop/ProductPage.dart';
 
 class FavoriteProduct{
   final int id;
@@ -78,7 +77,6 @@ class _FavoritePageState extends State<FavoritePage> {
             return Text(error.toString());
           }else if(snapshot.hasData){
             final user = snapshot.data;
-            print(user!.email);
             return StreamBuilder<List<TypeTitle>>(
               stream: ReadFavoriteTitle(),
               builder: (context, snapshot) {
@@ -96,15 +94,15 @@ class _FavoritePageState extends State<FavoritePage> {
                         title: const Text('我的最愛'),
                         actions: [
                           IconButton(
-                              onPressed:(){},
-                              icon: const Icon(Icons.shopping_cart)
+                            onPressed:(){},
+                            icon: const Icon(Icons.shopping_cart)
                           )
                         ],
                       ),
                       SliverList(
                           delegate: SliverChildBuilderDelegate((BuildContext context,int index){
                             return StreamBuilder<List<FavoriteProduct>>(
-                              stream: ReadFavoriteProduct(user.email!),
+                              stream: ReadFavoriteProduct(user!.email),
                               builder: (context, snapshot) {
                                 if(snapshot.hasError){
                                   final error = snapshot.error;
@@ -125,89 +123,8 @@ class _FavoritePageState extends State<FavoritePage> {
                                           itemCount: favoriteproduct.length,
                                           scrollDirection: Axis.horizontal,
                                           itemBuilder: (BuildContext context, int i) {
-                                            return SizedBox(
-                                              width: size.width*0.55,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Card(
-                                                    clipBehavior: Clip.antiAlias,
-                                                    shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(15)
-                                                    ),
-                                                    child: InkWell(
-                                                      onTap: (){
-                                                        Navigator.push(context, MaterialPageRoute(
-                                                            builder: (context) => ProductPage(id: favoriteproduct[i].id,))
-                                                        );
-                                                      },
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Expanded(
-                                                            flex: 5,
-                                                            child: Stack(
-                                                              alignment: Alignment.topRight,
-                                                              children: [
-                                                                Ink.image(
-                                                                  image: NetworkImage(favoriteproduct[i].Photo),
-                                                                  height: 150,
-                                                                  width: size.width*0.5,
-                                                                  fit: BoxFit.fitHeight,
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets.all(5.0),
-                                                                  child: GestureDetector(
-                                                                      onTap: (){},
-                                                                      child: const Icon(Icons.favorite_border,color: Colors.red,)
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                            flex: 4,
-                                                            child: Column(
-                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                                  child: Text(favoriteproduct[i].Name.replaceAll('\\n', '\n'),
-                                                                    textAlign: TextAlign.start,
-                                                                    style: const TextStyle(fontSize: 20),
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                                  child: FittedBox(
-                                                                      child: Text('售價 : ${favoriteproduct[i].Price}',style:const TextStyle(fontSize: 20)
-                                                                      )
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                                  child: Container(
-                                                                      padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
-                                                                      decoration: BoxDecoration(
-                                                                          color: favoriteproduct[i].Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
-                                                                          //border: Border.all(),
-                                                                          borderRadius: BorderRadius.circular(10)
-                                                                      ),
-                                                                      child: Text(
-                                                                          favoriteproduct[i].Gender,
-                                                                          style: TextStyle(fontSize: 18,color: Colors.white)
-                                                                      )
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    )
-                                                ),
-                                              ),
-                                            );
+                                            return ProductCard(id: favoriteproduct[i].id, Photo: favoriteproduct[i].Photo, Name: favoriteproduct[i].Name,
+                                              Price: favoriteproduct[i].Price, Gender: favoriteproduct[i].Gender, width: size.width);
                                           },
                                         ),
                                       ),
