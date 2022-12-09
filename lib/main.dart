@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:majestyshop/Home/FavoritePage.dart';
 import 'package:majestyshop/Home/HomePage.dart';

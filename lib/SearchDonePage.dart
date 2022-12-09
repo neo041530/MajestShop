@@ -6,6 +6,7 @@ import 'package:majestyshop/Home/HomePage.dart';
 import 'SeriesPage.dart';
 import 'main.dart';
 
+
 class SearchDonePage extends StatefulWidget {
   const SearchDonePage({Key? key, required this.SearchString}) : super(key: key);
   final String SearchString;

@@ -114,7 +114,6 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
   var Focus = FocusNode();
@@ -123,40 +122,9 @@ class _HomePageState extends State<HomePage> {
     '系列',
     '全部'
   ];
-  Stream<List<Series>> ReadSeries() =>
-      FirebaseFirestore.instance
-        .collection('HomeSeries')
-        .orderBy('id')
-        .snapshots()
-        .map((event) =>
-          event.docs.map((e) =>
-            Series.fromJson(e.data())
-          ).toList()
-        );
-
-  Stream<List<TypeTitle>> ReadAllProductTitle() =>
-      FirebaseFirestore.instance
-          .collection('TypeTitle').where('TypeTitleText',isEqualTo: 'AllProduct')
-          .snapshots()
-          .map((event) =>
-            event.docs.map((e) =>
-              TypeTitle.fromJson(e.data())
-            ).toList()
-        );
-
-  Stream<List<SeriesProduct>> ReadAllProduct() =>
-      FirebaseFirestore.instance
-          .collection('Product')
-          .snapshots()
-          .map((event) =>
-          event.docs.map((e) =>
-              SeriesProduct.fromJson(e.data())
-          ).toList()
-      );
-
 
   void initState(){
-    Focus.addListener(() {
+    Focus.addListener(() {//按了上面的搜尋欄會跳到SearchPage
       if(Focus.hasFocus) {
         Navigator.push(context, MaterialPageRoute(
           builder: (context) => const SearchPage()));
@@ -214,11 +182,10 @@ class _HomePageState extends State<HomePage> {
                     IconButton(
                       onPressed:(){
                         Navigator.push(context, MaterialPageRoute(
-                            builder: (context) =>
-                          ShoppingCarPage()
+                            builder: (context) => const ShoppingCarPage()
                         ));
                       },
-                      icon: Icon(Icons.shopping_cart)
+                      icon: const Icon(Icons.shopping_cart)
                     ),
                   ],
                 ),
@@ -235,118 +202,164 @@ class _HomePageState extends State<HomePage> {
         },
         body: TabBarView(
           children : [
-            TabOne(size.width,size.height),
-            TabTwo(size.width,size.height)
+            TabOne(height: size.height,scrollController: _scrollController),
+            TabTwo(width: size.width,scrollController: _scrollController)
           ]
         ),
       ),
     );
   }
-  Widget TabOne(width,height){
+}
+
+class TabOne extends StatelessWidget {
+  const TabOne({Key? key, required this.height, required this.scrollController}) : super(key: key);
+  final double height;
+  final ScrollController scrollController;
+  Stream<List<Series>> ReadSeries() =>//讀取有哪些系列
+  FirebaseFirestore.instance
+      .collection('HomeSeries')
+      .orderBy('id')
+      .snapshots()
+      .map((event) =>
+      event.docs.map((e) =>
+          Series.fromJson(e.data())
+      ).toList()
+  );
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey,
       body: Builder(
-        builder: (context) {
-          return StreamBuilder<List<Series>>(
-            stream: ReadSeries(),
-            builder: (context, snapshot) {
-              if(snapshot.hasError){
-                final error = snapshot.error;
-                print(error.toString());
-                return Text(error.toString());
-              }else if(snapshot.hasData){
-                List<Series> series = snapshot.data!;
-                return CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                    SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-                    SliverFixedExtentList(
-                      itemExtent: height*0.25,
-                      delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                        return SeriesCard(Type: series[index].Type, Video: series[index].Video, Name: series[index].Name, Photo: series[index].Photo, height: height);
-                      },childCount: series.length),
-                    ),
-                  ],
-                );
-              }else{
-                return const Center(child: CircularProgressIndicator());
-              }
-            }
-          );
-        }
-      ),
-    );
-  }
-  Widget TabTwo(width,height){
-    return Scaffold(
-      backgroundColor: Colors.grey,
-      body: StreamBuilder<List<TypeTitle>>(
-        stream: ReadAllProductTitle(),
-        builder: (context, snapshot) {
-          if(snapshot.hasError){
-            final error = snapshot.error;
-            print(error.toString());
-            return Text(error.toString());
-          }else if(snapshot.hasData){
-            List<TypeTitle> title= snapshot.data!;
-            return CustomScrollView(
-                controller: _scrollController,
-                slivers : [
-                  SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
-                  SliverList(
-                      delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                        return StreamBuilder<List<SeriesProduct>>(
-                          stream: ReadAllProduct(),
-                          builder: (context, snapshot) {
-                            if(snapshot.hasError){
-                              final error = snapshot.error;
-                              print(error.toString());
-                              return Text(error.toString());
-                            }else if(snapshot.hasData){
-                              List<SeriesProduct> product = snapshot.data!.where((element) => element.Type == title[0].typeTitle[index] ).toList();
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                                    child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
-                                  ),
-                                  SizedBox(
-                                    height: 300,
-                                    child: ListView.builder(
-                                      itemCount: product.length,
-                                      scrollDirection: Axis.horizontal,
-                                      itemBuilder: (BuildContext context, int index) {
-                                        return ProductCard(id: product[index].id, Photo: product[index].Photo[0],
-                                            Name: product[index].Name, Price: product[index].Price,
-                                            Gender: product[index].Gender, width: width);
-                                      },
-                                    ),
-                                  ),
-                                  const Divider(
-                                    thickness: 2,
-                                  ),
-                                ],
-                              );
-                            }else{
-                              return const Center(child: CircularProgressIndicator());
-                            }
-                          }
-                        );
-                      },childCount: title[0].typeTitle.length)
-                  )
-                ]
+          builder: (context) {
+            return StreamBuilder<List<Series>>(
+                stream: ReadSeries(),
+                builder: (context, snapshot) {
+                  if(snapshot.hasError){
+                    final error = snapshot.error;
+                    print(error.toString());
+                    return Text(error.toString());
+                  }else if(snapshot.hasData){
+                    List<Series> series = snapshot.data!;
+                    return CustomScrollView(
+                      controller: scrollController,
+                      slivers: [
+                        SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+                        SliverFixedExtentList(
+                          itemExtent: height*0.25,
+                          delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                            return SeriesCard(Type: series[index].Type, Video: series[index].Video, Name: series[index].Name, Photo: series[index].Photo, height: height);
+                          },childCount: series.length),
+                        ),
+                      ],
+                    );
+                  }else{
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                }
             );
-          }else{
-            return const Center(child: CircularProgressIndicator());
           }
-        }
       ),
     );
   }
 }
 
-class ProductCard extends StatefulWidget {
+class TabTwo extends StatelessWidget {
+  const TabTwo({Key? key, required this.width, required this.scrollController}) : super(key: key);
+  final double width;
+  final ScrollController scrollController;
+
+  Stream<List<TypeTitle>> ReadAllProductTitle() =>//讀取全部商品頁裡的商品標頭
+  FirebaseFirestore.instance
+      .collection('TypeTitle').where('TypeTitleText',isEqualTo: 'AllProduct')
+      .snapshots()
+      .map((event) =>
+      event.docs.map((e) =>
+          TypeTitle.fromJson(e.data())
+      ).toList()
+  );
+
+  Stream<List<SeriesProduct>> ReadAllProduct() =>//讀取全部商品
+  FirebaseFirestore.instance
+      .collection('Product')
+      .snapshots()
+      .map((event) =>
+      event.docs.map((e) =>
+          SeriesProduct.fromJson(e.data())
+      ).toList()
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey,
+      body: StreamBuilder<List<TypeTitle>>(
+          stream: ReadAllProductTitle(),
+          builder: (context, snapshot) {
+            if(snapshot.hasError){
+              final error = snapshot.error;
+              print(error.toString());
+              return Text(error.toString());
+            }else if(snapshot.hasData){
+              List<TypeTitle> title= snapshot.data!;
+              return CustomScrollView(
+                  controller: scrollController,
+                  slivers : [
+                    SliverOverlapInjector(handle:NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+                    SliverList(
+                        delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                          return StreamBuilder<List<SeriesProduct>>(
+                              stream: ReadAllProduct(),
+                              builder: (context, snapshot) {
+                                if(snapshot.hasError){
+                                  final error = snapshot.error;
+                                  print(error.toString());
+                                  return Text(error.toString());
+                                }else if(snapshot.hasData){
+                                  List<SeriesProduct> product = snapshot.data!.where((element) => element.Type == title[0].typeTitle[index] ).toList();
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
+                                      ),
+                                      SizedBox(
+                                        height: 300,
+                                        child: ListView.builder(
+                                          itemCount: product.length,
+                                          scrollDirection: Axis.horizontal,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            return ProductCard(id: product[index].id, Photo: product[index].Photo[0],
+                                                Name: product[index].Name, Price: product[index].Price,
+                                                Gender: product[index].Gender, width: width);
+                                          },
+                                        ),
+                                      ),
+                                      const Divider(
+                                        thickness: 2,
+                                      ),
+                                    ],
+                                  );
+                                }else{
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                              }
+                          );
+                        },childCount: title[0].typeTitle.length)
+                    )
+                  ]
+              );
+            }else{
+              return const Center(child: CircularProgressIndicator());
+            }
+          }
+      ),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
   const ProductCard({Key? key, required this.id, required this.Photo, required this.Name,
     required this.Price, required this.Gender, required this.width}) : super(key: key);
   final int id;
@@ -355,16 +368,10 @@ class ProductCard extends StatefulWidget {
   final String Price;
   final String Gender;
   final double width;
-
-  @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.width*0.55,
+      width: width*0.55,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Card(
@@ -375,9 +382,9 @@ class _ProductCardState extends State<ProductCard> {
             child: InkWell(
               onTap: (){
                 Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => ProductPage(id: widget.id,))
+                    builder: (context) => ProductPage(id: id,))
                 );
-              } ,
+              },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -387,9 +394,9 @@ class _ProductCardState extends State<ProductCard> {
                       alignment: Alignment.topRight,
                       children: [
                         Ink.image(
-                          image: NetworkImage(widget.Photo),
+                          image: NetworkImage(Photo),
                           height: 150,
-                          width: widget.width*0.5,
+                          width: width*0.5,
                           fit: BoxFit.fitHeight,
                         ),
                         Padding(
@@ -417,15 +424,15 @@ class _ProductCardState extends State<ProductCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               FittedBox(
-                                child: Text(widget.Name.replaceAll('\\n', '\n').split('\n')[0],
-                                  textAlign: TextAlign.start,
-                                  style: Theme.of(context).textTheme.headline2
+                                child: Text(Name.replaceAll('\\n', '\n').split('\n')[0],
+                                    textAlign: TextAlign.start,
+                                    style: Theme.of(context).textTheme.headline2
                                 ),
                               ),
                               FittedBox(
-                                child: Text(widget.Name.replaceAll('\\n', '\n').split('\n')[1],
-                                  textAlign: TextAlign.start,
-                                  style: Theme.of(context).textTheme.headline2
+                                child: Text(Name.replaceAll('\\n', '\n').split('\n')[1],
+                                    textAlign: TextAlign.start,
+                                    style: Theme.of(context).textTheme.headline2
                                 ),
                               ),
                             ],
@@ -434,7 +441,7 @@ class _ProductCardState extends State<ProductCard> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: FittedBox(
-                              child: Text('售價 : ${widget.Price}',style:Theme.of(context).textTheme.headline2)
+                              child: Text('售價 : $Price',style:Theme.of(context).textTheme.headline2)
                           ),
                         ),
                         Padding(
@@ -442,11 +449,11 @@ class _ProductCardState extends State<ProductCard> {
                           child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 4),
                               decoration: BoxDecoration(
-                                  color: widget.Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
+                                  color: Gender == 'Mens' ? Colors.blueAccent:Colors.pinkAccent,
                                   borderRadius: BorderRadius.circular(10)
                               ),
                               child: Text(
-                                  widget.Gender,
+                                  Gender,
                                   style: Theme.of(context).textTheme.headline3
                               )
                           ),
@@ -463,27 +470,21 @@ class _ProductCardState extends State<ProductCard> {
   }
 }
 
-class SeriesCard extends StatefulWidget {
+class SeriesCard extends StatelessWidget {
   const SeriesCard({Key? key, required this.Type, required this.Video, required this.Name, required this.Photo, required this.height}) : super(key: key);
   final List<dynamic> Type;
   final String Video;
   final String Name;
   final String Photo;
   final double height;
-
-  @override
-  State<SeriesCard> createState() => _SeriesCardState();
-}
-
-class _SeriesCardState extends State<SeriesCard> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){
         Navigator.push(context, MaterialPageRoute(
             builder: (context) =>
-                SeriesPage(Type:widget.Type,Video: widget.Video,
-                  Name:widget.Name)
+                SeriesPage(Type:Type,Video: Video,
+                    Name:Name)
         ));
       },
       child: Padding(
@@ -496,7 +497,7 @@ class _SeriesCardState extends State<SeriesCard> {
                   height: 20,
                 ),
                 Container(
-                  height: widget.height*0.2,
+                  height: height*0.2,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15)
@@ -511,7 +512,7 @@ class _SeriesCardState extends State<SeriesCard> {
                           flex: 4,
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text('MAJESTY\n${widget.Name}',
+                            child: Text('MAJESTY\n$Name',
                                 style: GoogleFonts.lato(
                                   fontSize: 25,
                                 )
@@ -527,8 +528,8 @@ class _SeriesCardState extends State<SeriesCard> {
                 top: -30,
                 //left: 30,
                 child: SizedBox(
-                  height: widget.height*0.25,
-                  child: Image.network(widget.Photo),
+                  height: height*0.25,
+                  child: Image.network(Photo),
                 )
             ),
           ],

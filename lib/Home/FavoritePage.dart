@@ -34,15 +34,8 @@ class FavoriteProduct{
   );
 }
 
-class FavoritePage extends StatefulWidget {
+class FavoritePage extends StatelessWidget {
   const FavoritePage({Key? key}) : super(key: key);
-
-  @override
-  State<FavoritePage> createState() => _FavoritePageState();
-}
-
-class _FavoritePageState extends State<FavoritePage> {
-
   Stream<List<TypeTitle>> ReadFavoriteTitle() =>
       FirebaseFirestore.instance
           .collection('TypeTitle').where('TypeTitleText',isEqualTo:'FavoriteTitle')
@@ -62,95 +55,94 @@ class _FavoritePageState extends State<FavoritePage> {
               FavoriteProduct.fromJson(e.data())
           ).toList()
       );
-
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.grey,
       body: StreamBuilder<User?>(//抓使用者登入
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if(snapshot.hasError){
-            final error = snapshot.error;
-            print(error.toString());
-            return Text(error.toString());
-          }else if(snapshot.hasData){
-            final user = snapshot.data;
-            return StreamBuilder<List<TypeTitle>>(
-              stream: ReadFavoriteTitle(),
-              builder: (context, snapshot) {
-                if(snapshot.hasError){
-                  final error = snapshot.error;
-                  print(error.toString());
-                  return Text(error.toString());
-                }else if(snapshot.hasData){
-                  List<TypeTitle> title= snapshot.data!;
-                  return CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        backgroundColor: Colors.black,
-                        pinned: true,
-                        title: const Text('我的最愛'),
-                        actions: [
-                          IconButton(
-                            onPressed:(){},
-                            icon: const Icon(Icons.shopping_cart)
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if(snapshot.hasError){
+              final error = snapshot.error;
+              print(error.toString());
+              return Text(error.toString());
+            }else if(snapshot.hasData){
+              final user = snapshot.data;
+              return StreamBuilder<List<TypeTitle>>(
+                  stream: ReadFavoriteTitle(),
+                  builder: (context, snapshot) {
+                    if(snapshot.hasError){
+                      final error = snapshot.error;
+                      print(error.toString());
+                      return Text(error.toString());
+                    }else if(snapshot.hasData){
+                      List<TypeTitle> title= snapshot.data!;
+                      return CustomScrollView(
+                        slivers: [
+                          SliverAppBar(
+                            backgroundColor: Colors.black,
+                            pinned: true,
+                            title: const Text('我的最愛'),
+                            actions: [
+                              IconButton(
+                                  onPressed:(){},
+                                  icon: const Icon(Icons.shopping_cart)
+                              )
+                            ],
+                          ),
+                          SliverList(
+                              delegate: SliverChildBuilderDelegate((BuildContext context,int index){
+                                return StreamBuilder<List<FavoriteProduct>>(
+                                    stream: ReadFavoriteProduct(user!.email),
+                                    builder: (context, snapshot) {
+                                      if(snapshot.hasError){
+                                        final error = snapshot.error;
+                                        print(error.toString());
+                                        return Text(error.toString());
+                                      }else if(snapshot.hasData){
+                                        List<FavoriteProduct> favoriteproduct= snapshot.data!.where((element) => element.Type == title[0].typeTitle[index]).toList();
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                                              child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
+                                            ),
+                                            SizedBox(
+                                              height: 300,
+                                              child: ListView.builder(
+                                                itemCount: favoriteproduct.length,
+                                                scrollDirection: Axis.horizontal,
+                                                itemBuilder: (BuildContext context, int i) {
+                                                  return ProductCard(id: favoriteproduct[i].id, Photo: favoriteproduct[i].Photo, Name: favoriteproduct[i].Name,
+                                                      Price: favoriteproduct[i].Price, Gender: favoriteproduct[i].Gender, width: size.width);
+                                                },
+                                              ),
+                                            ),
+                                            const Divider(
+                                              thickness: 2,
+                                            ),
+                                          ],
+                                        );
+                                      }else{
+                                        return const Center(child: CircularProgressIndicator());
+                                      }
+                                    }
+                                );
+                              },childCount: title[0].typeTitle.length)
                           )
                         ],
-                      ),
-                      SliverList(
-                          delegate: SliverChildBuilderDelegate((BuildContext context,int index){
-                            return StreamBuilder<List<FavoriteProduct>>(
-                              stream: ReadFavoriteProduct(user!.email),
-                              builder: (context, snapshot) {
-                                if(snapshot.hasError){
-                                  final error = snapshot.error;
-                                  print(error.toString());
-                                  return Text(error.toString());
-                                }else if(snapshot.hasData){
-                                  List<FavoriteProduct> favoriteproduct= snapshot.data!.where((element) => element.Type == title[0].typeTitle[index]).toList();
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                                        child: Text(title[0].typeTitle[index],style:GoogleFonts.lato(fontSize: 30)),
-                                      ),
-                                      SizedBox(
-                                        height: 300,
-                                        child: ListView.builder(
-                                          itemCount: favoriteproduct.length,
-                                          scrollDirection: Axis.horizontal,
-                                          itemBuilder: (BuildContext context, int i) {
-                                            return ProductCard(id: favoriteproduct[i].id, Photo: favoriteproduct[i].Photo, Name: favoriteproduct[i].Name,
-                                              Price: favoriteproduct[i].Price, Gender: favoriteproduct[i].Gender, width: size.width);
-                                          },
-                                        ),
-                                      ),
-                                      const Divider(
-                                        thickness: 2,
-                                      ),
-                                    ],
-                                  );
-                                }else{
-                                  return const Center(child: CircularProgressIndicator());
-                                }
-                              }
-                            );
-                          },childCount: title[0].typeTitle.length)
-                      )
-                    ],
-                  );
-                }else{
-                  return const Center(child: CircularProgressIndicator());
-                }
-              }
-            );
-          }else{
-            return LoginPage();
+                      );
+                    }else{
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  }
+              );
+            }else{
+              return LoginPage();
+            }
           }
-        }
       ),
     );
   }
